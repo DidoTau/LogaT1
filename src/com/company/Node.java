@@ -20,23 +20,23 @@ public class Node {
         this.val = val;
         h = 0;
     }
-    Node insert(Node node, int val){
+    Node insert( int val){
         // llega a un nodo vacío, crea el nodo con el valor ingresado
-        if(node==null){
+        if(this==null){
             return new Node(val);
         }
         // insertar a la izquierda si es menor que el valor del nodo actual
-        else if(val < node.val){
-            node.left = insert(node.left, val);
+        else if(val < this.val){
+            this.left = this.left.insert(val);
         }
         // insertar a la derecha si es mayor que el valor del nodo actual
-        else if (val > node.val){
-            node.right = insert(node.right, val);
+        else if (val > this.val){
+            this.right = this.right.insert(val);
         }
         else {
             throw new RuntimeException("valor duplicado!");
         }
-        return node;
+        return this;
     }
     int getHeight(Node node){
         return node == null ? -1:node.h;

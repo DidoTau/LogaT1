@@ -14,7 +14,7 @@ public class AVL extends Node{
     }
 
     Node insert(Node node, int val){
-        return balance(super.insert(node, val));
+        return balance(this.insert(val));
     }
 
     Node balance(Node node){
