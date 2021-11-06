@@ -44,7 +44,13 @@ class AVL(Node):
     def updateHeight(self, node):
         node.height = 1 + max(super().getHeight(node.left),
                            super().getHeight(node.right))
-
+    def search(self, node, key):
+        current = node 
+        while node:
+            if(current.val == key):               
+                break
+            current = current.right if current.val < key else current.left
+        return current
     def leftRotate(self, z):
  
         y = z.right
@@ -123,3 +129,4 @@ print("Preorder traversal of the",
       "constructed AVL tree is")
 myTree.preOrder(root)
 print()
+print("buscando: ",myTree.search(root, 25))
