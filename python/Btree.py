@@ -4,6 +4,15 @@ class NodoB:
         self.valores = []
         self.hijos = []
 
+    def insertarHayEspacio(self,val):
+        pos = len(self.valores)-1
+        self.valores.append(None)
+        while pos >= 0 and val < self.valores[pos]:   #movemos una posicion los valores hasta que corresponda ingresar el nuevp
+            self.valores[pos + 1] = self.valores[pos]
+            pos -= 1
+        self.valores[pos + 1] = val    #ingresamos el nuevo
+    
+
     def search(self,val ,nodo):
         largo = len(nodo.valores)
         arr = nodo.valores
@@ -18,7 +27,15 @@ class NodoB:
                 if nodo.esHoja == True :
                     return False
                 else: 
-                    return self.search(val,nodo.hijos[i+1]) 
+                   # print("posicion: ",i)
+                   # print("valor byscando: ",val)
+                   # print("nodos hijos tamaño: " ,len(nodo.hijos))
+                   # print("valor actual : ",nodo.valores[i])
+                   # print("tamano arreglo hijos", len(nodo.hijos))
+                   # print("hijosvv ",nodo.valores )
+                   # print("hijosvv ",nodo.hijos[i+1].valores )
+                    return self.search(val,nodo.hijos[i+1])
+
 
 
 
@@ -26,6 +43,15 @@ class Btree:
     def __init__(self, b):
         self.raiz = NodoB(True)
         self.B = b
+
+    def reset(self):
+        self.raiz = NodoB(True)
+        self.B = self.B
+            
+
+
+    def search(self,val):
+        return self.raiz.search(val ,self.raiz)    
 
     def print_tree(self, x, l=0):
         print("Level ", l, " ", len(x.valores), end=":")
@@ -41,8 +67,9 @@ class Btree:
     def insert(self, val):
         B = self.B
         raiz = self.raiz
+        largo = len(raiz.valores)
 
-        if len(raiz.valores) < B: #si no esta llena la raiz
+        if largo < B: #si no esta llena la raiz
             self.insertarNoLlena(raiz, val)
         
         else: #si l araiz está llena la parimos
@@ -74,11 +101,11 @@ class Btree:
         #nodoAyuda.valores = nodoLleno.valores[int((B+1)/2): B]  #le pasamos loso valores
         #nodoLleno.valores = nodoLleno.valores[0: int((B-1)/2)]
         
-        if not nodoLleno.esHoja: #si el que se lleno no era una hoja tenemos que a los otros tamboen pasarle sus hijos nodos
+        if nodoLleno.esHoja == False: #si el que se lleno no era una hoja tenemos que a los otros tamboen pasarle sus hijos nodos
             for i in range(int((B+1)/2),B+1):  #insertamso los hijos al nuevo nodo
                 nodoAyuda.hijos.append(nodoLleno.hijos[i])   
             listah = []    
-            for j in range(0, int((B-1)/2)):   #cambiamos los hijpos del nodo lleno
+            for j in range(0, int(((B-1)/2)+1)):   #cambiamos los hijpos del nodo lleno
                 listah.append(nodoLleno.hijos[j])
             nodoLleno.hijos = listah       
            # nodoAyuda.hijos = nodoLleno.hijos[int((B+1)/2) : B+1 ]
@@ -90,30 +117,28 @@ class Btree:
 
     def insertarNoLlena(self, raiz, val):
         B = self.B         
-        pos = len(raiz.valores) - 1
+        largo = len(raiz.valores) - 1
 
         if raiz.esHoja:   #si es una hoja podemos inssertar aca
-            raiz.valores.append(None) 
-            while pos >= 0 and val < raiz.valores[pos]:   #movemos una posicion los valores hasta que corresponda ingresar el nuevp
-                raiz.valores[pos + 1] = raiz.valores[pos]
-                pos -= 1
-            raiz.valores[pos + 1] = val    #ingresamos el nuevo
+            raiz.insertarHayEspacio(val)
         else:    #si no es una hoja 
-            while pos >= 0 and val < raiz.valores[pos]:
-                pos -= 1
-            pos += 1
+            i = 0
+            while i <= largo and val > raiz.valores[i]:
+                i += 1
 
-            if len(raiz.hijos[pos].valores) == B:
-                self.partir(raiz, pos)
-                if val > raiz.valores[pos]:
-                    pos += 1
-            self.insertarNoLlena(raiz.hijos[pos], val)
-
-    def reset(self):
-        self.raiz = NodoB(True)
-        self.B = self.B
-            
+            if len(raiz.hijos[i].valores) == B:
+                self.partir(raiz, i)
+                if val > raiz.valores[i]:
+                    i += 1
+            self.insertarNoLlena(raiz.hijos[i], val)
 
 
-    def search(self,val):
-        return self.raiz.search(val ,self.raiz)
+
+a = Btree(16)
+for i in range(10**3):
+    a.insert(i)
+
+a.print_tree(a.raiz)    
+
+for i in range(1001):
+    print(f"num {i}  {a.search(i)}")
