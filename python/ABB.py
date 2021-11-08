@@ -44,5 +44,6 @@ class ABB:
         else:
             return self.root.search(val, self.root)                   
 
-
+    def reset(self):
+        self.root = None
 
