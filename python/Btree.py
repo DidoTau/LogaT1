@@ -4,8 +4,25 @@ class NodoB:
         self.valores = []
         self.hijos = []
 
+    def search(self,val ,nodo):
+        largo = len(nodo.valores)
+        arr = nodo.valores
+        for i in range(largo):
+            if val == arr[i]:
+                return True
+            elif val < arr[i] and nodo.esHoja == True :
+                return False
+            elif val < arr[i] :
+                return self.search(val,nodo.hijos[i])   
+            elif val > arr[i] and len(nodo.valores) == i+1 :
+                if nodo.esHoja == True :
+                    return False
+                else: 
+                    return self.search(val,nodo.hijos[i+1]) 
 
-class ArbolB:
+
+
+class Btree:
     def __init__(self, b):
         self.raiz = NodoB(True)
         self.B = b
@@ -19,29 +36,32 @@ class ArbolB:
         if len(x.hijos) > 0:
             for i in x.hijos:
                 self.print_tree(i, l)
+            
 
-  
+    def insert(self, val):
+        B = self.B
+        raiz = self.raiz
 
-    def buscarVal(self, val, nodo): 
-        largo = len(nodo.valores)
-        it = 0
-        while  it < largo and val > nodo.valores[it] :
-            it += 1
-        if it < largo and val == nodo.valores[it]:
-            return True
-        elif nodo.esHoja:  #si es hoja y no lo encontramos chao
-            return False
-        else:
-            return self.buscarVal(val, nodo.hijos[it])
-      
+        if len(raiz.valores) < B: #si no esta llena la raiz
+            self.insertarNoLlena(raiz, val)
+        
+        else: #si l araiz está llena la parimos
+            nuevaRaiz = NodoB()    #creamos nodo que sera la nueva raiz
+            self.raiz = nuevaRaiz
+            nuevaRaiz.hijos.insert(0, raiz)  #la nueva raiz  su primer hijo sera la ex raiz
+            self.partir(nuevaRaiz, 0)  
+            self.insertarNoLlena(nuevaRaiz, val) #luego recien insertamos el valor
+        
+
 
     
     def partir(self, raizNueva, pos):
         B = self.B
         nodoLleno = raizNueva.hijos[pos]
         nodoAyuda = NodoB(nodoLleno.esHoja)  #nodo con el que el nodo que esta lleno comparte sus cosas
-        raizNueva.hijos.insert(pos + 1, nodoAyuda) #inserta el nuevo noso como un hijo al arreglo de nodos
-        raizNueva.valores.insert(pos, nodoLleno.valores[int((B-1)/2)])  # insertamos el valor del nueevo  
+        raizNueva.hijos.insert(pos + 1, nodoAyuda) #inserta el nuevo noso como un hijo al arreglo de nodos 
+        
+        raizNueva.valores.insert(pos, nodoLleno.valores[int((B-1)/2)])  # insertamos el valor del nueevo 
         for i in range(int((B+1)/2),B):  #nuval del nod
             nodoAyuda.valores.append(nodoLleno.valores[i])
         #print("nodod ayuda",nodoAyuda.valores)
@@ -66,24 +86,7 @@ class ArbolB:
 
 
             
-            
-
-    def insertarVal(self, val):
-        B = self.B
-        raiz = self.raiz
-
-        if len(raiz.valores) < B: #si no esta llena la raiz
-            self.insertarNoLlena(raiz, val)
-        
-        else: #si l araiz está llena la parimos
-            nuevaRaiz = NodoB()    #creamos nodo que sera la nueva raiz
-            self.raiz = nuevaRaiz
-            nuevaRaiz.hijos.insert(0, raiz)  #la nueva raiz  su primer hijo sera la ex raiz
-            self.partir(nuevaRaiz, 0)  
-            self.insertarNoLlena(nuevaRaiz, val) #luego recien insertamos el valor
-        
-
-
+    
 
     def insertarNoLlena(self, raiz, val):
         B = self.B         
@@ -106,5 +109,11 @@ class ArbolB:
                     pos += 1
             self.insertarNoLlena(raiz.hijos[pos], val)
 
+    def reset(self):
+        self.raiz = NodoB(True)
+        self.B = self.B
+            
 
 
+    def search(self,val):
+        return self.raiz.search(val ,self.raiz)

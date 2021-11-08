@@ -5,7 +5,8 @@ class Node(object):
         self.left = None 
         self.right = None 
         self.height = 1
-    
+        self.parent = None
+        
     def insert(self, node, key):
         """
         Inserción clásica en un árbol binario
@@ -23,7 +24,7 @@ class Node(object):
             node.left = self.insert(node.left, key)
         else:
             node.right = self.insert(node.right, key)
-        return node 
+        
 
     def getHeight(self, node):    
         """
@@ -39,3 +40,10 @@ class Node(object):
             return 0
         
         return node.height
+    def search(self, node, key):
+        
+        while node:
+            if(node.val == key):               
+                return True
+            return self.search(node.right, key) if node.val < key else self.search(node.left, key)
+        return False

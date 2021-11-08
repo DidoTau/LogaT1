@@ -1,7 +1,13 @@
 import numpy as np 
 import time
 import matplotlib.pyplot as plt
+import sys
+import math 
+
 from ABB import *
+from AVL import *
+from Splay import *
+from Btree import *
 
 def generateOperation():
     """
@@ -61,15 +67,15 @@ def random(node, op, arr, n):
     """
     random_int = np.random.randint(low = 0, high = n)
     if op == 0 or op == 2:                            #si insercion o busqueda mala
-        while arr[random_int] == 1:                  #mientras esté en el arreglo
-            random_int = np.random.randint(low = 0, high = n)       #generamos otro
+        in_index = np.where(arr == 0)[0] # indices de valores no existentes
+        random_int = np.random.choice(in_index)
         operator(node, random_int, op, arr)
     elif op ==1:                                     #si es busqueda buena
-        while arr[random_int] == 0:                   #mientras no est en el arreglo
-            random_int =  np.random.randint(low = 0, high = n)   #generamo otro
+        in_index = np.where(arr == 1)[0] # indices de valores existentes 
+        random_int = np.random.choice(in_index)
         operator(node, random_int, op, arr)
 
-def increasing(node,op, arr, n, k, m):
+def increasing(node,op, arr, n, k):
     """
     Genera numeros que tienden a ser creciente para insertar pero q onda con los otros???????
 
@@ -79,17 +85,23 @@ def increasing(node,op, arr, n, k, m):
         arr ([type]): [description]
         n ([type]): [description]
     """
-    random_int = np.random.randint(low = 0, high = k+m+1)  
-    if op == 0 | op == 2:                            #si insercion o busqueda mala
-        while arr[random_int] == 1:                  #mientras este en el arreglo
-            random_int = np.random.randint(low = 0, high = k+m+1)       #generamos otro
-        operator(node, random_int, op, arr)   # hacer update de m en las inserciones!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    elif op ==1:                                     #si es busqueda buena
-        while arr[random_int] == 0:                   #mientras no est en el arreglo
-            random_int =  np.random.randint(low = 0, high = k+m+1)   #generamoh otro
+    random_int = np.random.randint(low = 0, high = k)    
+    if op == 0: # si insertamos
+        m = np.sum(arr)
+        random_int+= m #le agregamos la cantidad de agregados
+        operator(node, random_int, op, arr) #op insertar
+
+    elif op == 2: #busqueda mala
+        while arr[random_int] == 1: # mientras este en el arreglo
+            random_int = np.random.randint(low = 0, high = k)       #generamos otro
+        operator(node, random_int, op, arr)   
+
+    else: # op ==1:                                     #si es busqueda buena
+        in_index = np.where(arr == 1) # indices de valores existentes 
+        random_int = np.random.choice(in_index)
         operator(node, random_int, op, arr)
 
-def biased(node, op, arr, n, k, m, f, P):
+def biased(node, op, arr, n, arr_prob,f):
     """
     Funciona igual que random, pero al hacer búsquedas 
     exitosas elige los valores según la probabilidad
@@ -104,20 +116,23 @@ def biased(node, op, arr, n, k, m, f, P):
         m ([type]): [description]
     """
     
-    if op == 0 or op == 2:
+    if op == 0 : #insertar
         random_int = np.random.randint(low = 0, high = n)     # si insercion o busqueda mala
         while arr[random_int] != 0:                  # mientras este en el arreglo
             random_int = np.random.randint(low = 0, high = n)       # generamos otro
         operator(node, random_int, op, arr)
-        arr[random_int] = f(random_int)/P  # ACTUALIZAR P !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        arr_prob[random_int] = f(random_int)/arr_prob.sum()  # ACTUALIZAR P !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     elif op ==1:
-          
-        random_int = np.random.choice(np.arange(n), arr)     # si es busqueda buena
+        random_int = np.random.choice(np.arange(n), arr_prob)     # si es busqueda buena
         while arr[random_int] == 0:                   # mientras no est en el arreglo
             random_int =  np.random.randint(low = 0, high = n)   # generamos otro
         operator(node, random_int, op, arr)
+    else: # busqueda mala op = 2    
+        while arr[random_int] == 1:      #mientras esté en el arreglo
+            random_int = np.random.randint(low = 0, high = n)     #generamos otro
+        operator(node, random_int, op, arr)            
 
-def sequence(node, sec, n, subsample, sequence_type):
+def sequence(node, sec, n, subsample, sequence_type ,k = 0, f = None):
     """
     Genera #sec secuencias de n operaciones cada una
     y guarda el tiempo de CPU / user time en un arreglo
@@ -137,6 +152,9 @@ def sequence(node, sec, n, subsample, sequence_type):
     times = []   #valores tiempos c/ 1000 operaciones
     if sequence_type =="random":
         for i in range(sec): #100 
+            if i != 0:
+                node.reset()
+                node.insert(0)
             arr_values = np.zeros(n) # existencia  de valores
             arr_values[0] = 1 # 0 existe
             times_i = []
@@ -149,20 +167,40 @@ def sequence(node, sec, n, subsample, sequence_type):
             times.append(times_i)    
     elif sequence_type == "increasing":
         for i in range(sec): #100 
-            arr_values = np.zeros(k+m)
+            if i!= 0: 
+                node.reset()
+                node.insert(0) 
+             
+            arr_values = np.zeros(n)
+            arr_values[0] = 1 # 0 existe
+            times_i = []  # tiempos por sec
+            start_time = time.process_time() 
             for j in range(n):               #recorremos el arreglo de operaciones?
                 op = array_ops[j]   
-                increasing(node, op, arr_values)
+                increasing(node, op, arr_values,k)
+                if (j+1)  %subsample == 0 and j !=0: # cada mil ca
+                    times_i.append(time.process_time()- start_time)
+            times.append(times_i)  #agregamos arr tiempos por         
     elif sequence_type == "biased":
         for i in range(sec): #100 
+            if i!= 0 : 
+                node.reset()
+                node.insert(0) 
+            arr_prob = np.zeros(n)   
             arr_values = np.zeros(n)
+            arr_values[0] = 1 # 0 existe
+            arr_prob[0] = f(0)
+            times_i = []  # tiempos por sec
+            start_time = time.process_time() 
             for j in range(n):               #recorremos el arreglo de operaciones?
                 op = array_ops[j]   
-                biased(node, op, arr_values)
-        #se supone q aqui ponemos la cuestio de los tiempos    
+                biased(node, op, arr_values, arr_prob)
+                if (j+1)  %subsample == 0 and j !=0: 
+                    times_i.append(time.process_time()- start_time)
+            times.append(times_i)  #agregamos arr tiempos por        
     return times
 
-def results(m):
+def results(m, save = False):
     """[summary]
 
     Args:
@@ -173,9 +211,9 @@ def results(m):
     """
     m = np.array(m)
     mean =  m.mean(axis=0)
-    lower = np.percentile(m, 2.5, axis = 0)
-    upper = np.percentile(m, 97.5, axis = 0)
-    
+    std = m.std(axis = 0)
+    lower = mean -  std/ math.sqrt(m.shape[0])
+    upper =  mean +  std/ math.sqrt(m.shape[0])
     return mean, lower, upper
 def plot_results(mean, lower, upper):
    
@@ -183,19 +221,67 @@ def plot_results(mean, lower, upper):
     plt.plot(x, mean)
     plt.errorbar(x, mean, yerr = (lower, upper))
     plt.show()
+def string_to_function(name):
+    if name == 'id':
+        return lambda x: x
+    elif name =='sqrt':
+        return lambda x: x**0.5
+    elif name == 'ln':
+        return lambda x: math.log(x)
 
 if __name__ == '__main__':
     """
         
     """
+    tree = sys.argv[1]
+    seq = sys.argv[2]
     n = int(10**3)
+    sec = 100 # experimentos
+    subsample = 10 # subsampleo
     array_ops  =  generateOperationArray(n)
     # aqui se crea un nodo del arbol 
-    ABB = ABB()
-    ABB.insert(0)
-    m_time = sequence(node = ABB, sec = 100, n = n, subsample = 100, sequence_type='random')
+    if tree == 'ABB':
+        ABB = ABB()
+        ABB.insert(0)
+         # ABB RANDOM
+        if seq == 'random':
+            m_time = sequence(node = ABB, sec = sec, n = n, subsample = subsample, sequence_type='random')
+        if seq == 'increasing':
+            pass
+        if seq == 'biased':
+            arg = sys.argv[3]
+            m_time = sequence(node = ABB, sec = sec, n = n, subsample = subsample, sequence_type='random', f = string_to_function(arg))
+
+
+    if tree == 'AVL':
+        AVL = AVL()
+        AVL.insert(0)
+        if seq == "random":
+            m_time = sequence(node = AVL, sec = sec, n = n, subsample = subsample, sequence_type='random')
+        if seq == 'biased':
+            arg = sys.argv[3]
+            m_time = sequence(node = AVL, sec = sec, n = n, subsample = subsample, sequence_type='random', f = string_to_function(arg))
+
+    if tree == 'Splay':
+        Splay =  Splay()
+        Splay.insert(0)
+        if seq == "random":
+            m_time = sequence(node = Splay, sec = sec, n = n, subsample = subsample, sequence_type='random')
+        if seq == 'biased':
+            arg = sys.argv[3]
+            m_time = sequence(node = Splay, sec = sec, n = n, subsample = subsample, sequence_type='random', f = string_to_function(arg))
+    if tree == 'Btree':
+        B = int(sys.argv[4])
+        Btree = Btree(B)
+        Btree.insert(0)
+        if seq == "random":
+            m_time = sequence(node = Btree , sec = sec, n = n, subsample = subsample, sequence_type='random')
+        if seq == 'biased':
+            arg = sys.argv[3]
+            m_time = sequence(node = Btree , sec = sec, n = n, subsample = subsample, sequence_type='random', f = string_to_function(arg))
+    
     m, l, u = results(m_time)
+    np.save('../experimentos/{}/{}_{}_mean.npy'.format(tree,tree, seq), m)
+    np.save('../experimentos/{}/{}_{}_lower.npy'.format(tree,tree, seq), l)
+    np.save('../experimentos/{}/{}_{}_upper.npy'.format(tree,tree, seq), u)
     plot_results(m, l, u)
-
-
-
