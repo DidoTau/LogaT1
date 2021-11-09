@@ -235,9 +235,9 @@ if __name__ == '__main__':
     """
     tree = sys.argv[1]
     seq = sys.argv[2]
-    n = int(10**3)
+    n = int(10**5)
     sec = 100 # experimentos
-    subsample = 10 # subsampleo
+    subsample = 100 # subsampleo
     array_ops  =  generateOperationArray(n)
     # aqui se crea un nodo del arbol 
     if tree == 'ABB':
