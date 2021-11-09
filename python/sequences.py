@@ -43,9 +43,10 @@ def operator(node, val, op, arr):
         val : valor a agregar 
         op ([type]): [description]
     """
+    
     if op == 0:                
         node.insert(val)
-        arr[int(op)]=1
+        arr[int(val)]=1
         ##
     elif op==1:
         node.search(val)
@@ -75,7 +76,7 @@ def random(node, op, arr, n):
         random_int = np.random.choice(in_index)
         operator(node, random_int, op, arr)
 
-def increasing(node,op, arr, n, k):
+def increasing(node,op, arr, k_f):
     """
     Genera numeros que tienden a ser creciente para insertar pero q onda con los otros???????
 
@@ -84,20 +85,36 @@ def increasing(node,op, arr, n, k):
         op ([type]): [description]
         arr ([type]): [description]
         n ([type]): [description]
+
+
+        k = 0.1m 
+        m = 1 -> k = 1 
+        insert(0 + m o 1 + m) insert(1 o 2) 
+
+        m = 2 -> k = 1
+        insert(2 o 3)
+
+        m = 11 -> k = 2
+        insert(11 o 12 o 13)
     """
-    random_int = np.random.randint(low = 0, high = k)    
-    if op == 0: # si insertamos
+     
+    if op == 0: # si insertamos 
         m = np.sum(arr)
-        random_int+= m #le agregamos la cantidad de agregados
+        k = math.ceil(k_f * m) # k_f es 0.1 o 0.5, usando funcion techo 
+        random_int_arr = np.arange(k+1)  
+        int_plus_m = random_int_arr + m # le agregamos la cantidad de agregados
+        in_index = np.where(arr == 0)[0] # indices de valores no existentes
+        random_int = np.random.choice(np.intersect1d(in_index, int_plus_m))
         operator(node, random_int, op, arr) #op insertar
 
     elif op == 2: #busqueda mala
-        while arr[random_int] == 1: # mientras este en el arreglo
-            random_int = np.random.randint(low = 0, high = k)       #generamos otro
-        operator(node, random_int, op, arr)   
+        in_index = np.where(arr == 0)[0] # indices de valores no existentes
+        random_int = np.random.choice(in_index)
+        operator(node, random_int, op, arr)
 
-    else: # op ==1:                                     #si es busqueda buena
-        in_index = np.where(arr == 1) # indices de valores existentes 
+    else: # op ==1:   
+          #si es busqueda buena
+        in_index = np.where(arr == 1)[0] # indices de valores existentes 
         random_int = np.random.choice(in_index)
         operator(node, random_int, op, arr)
 
@@ -118,19 +135,20 @@ def biased(node, op, arr, n, arr_prob,f):
     
     if op == 0 : #insertar
         random_int = np.random.randint(low = 0, high = n)     # si insercion o busqueda mala
-        while arr[random_int] != 0:                  # mientras este en el arreglo
-            random_int = np.random.randint(low = 0, high = n)       # generamos otro
+        in_index = np.where(arr == 0)[0] # indices de valores no existentes
+        random_int = np.random.choice(in_index)
         operator(node, random_int, op, arr)
-        arr_prob[random_int] = f(random_int)/arr_prob.sum()  # ACTUALIZAR P !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    elif op ==1:
-        random_int = np.random.choice(np.arange(n), arr_prob)     # si es busqueda buena
-        while arr[random_int] == 0:                   # mientras no est en el arreglo
-            random_int =  np.random.randint(low = 0, high = n)   # generamos otro
+        arr_prob[random_int] = 0 if random_int == 0 else f(random_int) 
+    elif op ==1: # si es busqueda buena
+        P = 1 if arr_prob.sum() == 0 else arr_prob.sum()
+        prob = arr_prob/P
+
+        random_int = np.random.choice(np.arange(arr.shape[0]), p = prob)     
         operator(node, random_int, op, arr)
     else: # busqueda mala op = 2    
-        while arr[random_int] == 1:      #mientras esté en el arreglo
-            random_int = np.random.randint(low = 0, high = n)     #generamos otro
-        operator(node, random_int, op, arr)            
+        in_index = np.where(arr == 0)[0] # indices de valores no existentes
+        random_int = np.random.choice(in_index)
+        operator(node, random_int, op, arr)        
 
 def sequence(node, sec, n, subsample, sequence_type ,k = 0, f = None):
     """
@@ -149,6 +167,7 @@ def sequence(node, sec, n, subsample, sequence_type ,k = 0, f = None):
  
         [type]: [description]
     """
+    # inicializar arbol con 1 elemento
     times = []   #valores tiempos c/ 1000 operaciones
     if sequence_type =="random":
         for i in range(sec): #100 
@@ -183,18 +202,19 @@ def sequence(node, sec, n, subsample, sequence_type ,k = 0, f = None):
             times.append(times_i)  #agregamos arr tiempos por         
     elif sequence_type == "biased":
         for i in range(sec): #100 
-            if i!= 0 : 
-                node.reset()
-                node.insert(0) 
+
+            node.reset()
+            node.insert(1) 
             arr_prob = np.zeros(n)   
             arr_values = np.zeros(n)
-            arr_values[0] = 1 # 0 existe
-            arr_prob[0] = f(0)
+            arr_values[2] = 2 # 2 existe
+            arr_prob[2] = f(2)
             times_i = []  # tiempos por sec
             start_time = time.process_time() 
             for j in range(n):               #recorremos el arreglo de operaciones?
-                op = array_ops[j]   
-                biased(node, op, arr_values, arr_prob)
+                op = array_ops[j]  
+                
+                biased(node, op, arr_values, n, arr_prob, f)
                 if (j+1)  %subsample == 0 and j !=0: 
                     times_i.append(time.process_time()- start_time)
             times.append(times_i)  #agregamos arr tiempos por        
@@ -227,7 +247,7 @@ def string_to_function(name):
     elif name =='sqrt':
         return lambda x: x**0.5
     elif name == 'ln':
-        return lambda x: math.log(x)
+        return lambda x: np.log(x)
 
 if __name__ == '__main__':
     """
@@ -237,20 +257,25 @@ if __name__ == '__main__':
     seq = sys.argv[2]
     n = int(10**5)
     sec = 100 # experimentos
-    subsample = 100 # subsampleo
-    array_ops  =  generateOperationArray(n)
+    subsample = 1000 # subsampleo
+    # array_ops  =  generateOperationArray(n)
+    array_ops =  np.load('seq_operations.npy')
+    
+    
+    
     # aqui se crea un nodo del arbol 
     if tree == 'ABB':
         ABB = ABB()
-        ABB.insert(0)
+       
          # ABB RANDOM
         if seq == 'random':
-            m_time = sequence(node = ABB, sec = sec, n = n, subsample = subsample, sequence_type='random')
+            m_time = sequence(node = ABB, sec = sec, n = n, subsample = subsample, sequence_type=seq)
         if seq == 'increasing':
-            pass
+            arg = float(sys.argv[3])
+            m_time = sequence(node = ABB, sec = sec, n = n, subsample = subsample, sequence_type=seq, k = arg)
         if seq == 'biased':
             arg = sys.argv[3]
-            m_time = sequence(node = ABB, sec = sec, n = n, subsample = subsample, sequence_type='random', f = string_to_function(arg))
+            m_time = sequence(node = ABB, sec = sec, n = n, subsample = subsample, sequence_type=seq, f = string_to_function(arg))
 
 
     if tree == 'AVL':

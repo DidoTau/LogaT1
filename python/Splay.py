@@ -6,13 +6,10 @@ class Splay:
 
 	
 	def __search_tree_helper(self, node, key):
-    	
-		if node == None: # si no lo encuentra, devuelve el padre
-    			return node.parent
-		elif key == node.val:
+		if node == None or key == node.val:
 			return node
 
-		elif key < node.val:
+		if key < node.val:
 			return self.__search_tree_helper(node.left, key)
 		return self.__search_tree_helper(node.right, key)
 
@@ -83,9 +80,6 @@ class Splay:
 
 
 	def search(self, k):
-		
-		if self.root == None:
-			return False
 		x = self.__search_tree_helper(self.root, k)
 		if x != None:
 			self.__splay(x)
@@ -105,9 +99,9 @@ class Splay:
 			else:
 				x = x.right
 
-		
+		# y is parent of x
 		node.parent = y
-		if y == None: # es raiz
+		if y == None:
 			self.root = node
 		elif node.val < y.val:
 			y.left = node
