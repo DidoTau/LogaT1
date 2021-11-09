@@ -6,10 +6,13 @@ class Splay:
 
 	
 	def __search_tree_helper(self, node, key):
-		if node == None or key == node.val:
+    	
+		if node == None: # si no lo encuentra, devuelve el padre
+    			return node.parent
+		elif key == node.val:
 			return node
 
-		if key < node.val:
+		elif key < node.val:
 			return self.__search_tree_helper(node.left, key)
 		return self.__search_tree_helper(node.right, key)
 
@@ -31,7 +34,7 @@ class Splay:
 		y.left = x
 		x.parent = y
 
-	# rotate right at node x
+
 	def __right_rotate(self, x):
 		y = x.left
 		x.left = y.right
@@ -49,7 +52,7 @@ class Splay:
 		y.right = x
 		x.parent = y
 
-	# Splaying operation. It moves x to the root of the tree
+	
 	def __splay(self, x):
 		while x.parent != None:
 			if x.parent.parent == None:
@@ -79,17 +82,17 @@ class Splay:
 
 
 
-
-	# search the tree for the key k
-	# and return the corresponding node
 	def search(self, k):
+		
+		if self.root == None:
+			return False
 		x = self.__search_tree_helper(self.root, k)
 		if x != None:
 			self.__splay(x)
 
 
 
-	# insert the key to the tree in its appropriate position
+	
 	def insert(self, key):
 		node =  Node(key)
 		y = None
@@ -102,9 +105,9 @@ class Splay:
 			else:
 				x = x.right
 
-		# y is parent of x
+		
 		node.parent = y
-		if y == None:
+		if y == None: # es raiz
 			self.root = node
 		elif node.val < y.val:
 			y.left = node

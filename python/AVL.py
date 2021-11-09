@@ -51,40 +51,40 @@ class AVL(Node):
         else: 
             return self.root.search(self.root, key)
 
-    def leftRotate(self, z):
+    def leftRotate(self, node):
  
-        y = z.right
-        T2 = y.left
+        node_r = node.right
+        node_r_l = node_r.left
         # rotacion
-        y.left = z
-        z.right = T2
+        node_r.left = node
+        node.right = node_r_l
 
-        # actualiza alturas luego de rotar
-        z.height = 1 + max(self.getHeight(z.left),
-                         self.getHeight(z.right))
-        y.height = 1 + max(self.getHeight(y.left),
-                         self.getHeight(y.right))
+        # actualizo las alturas luego de rotar
+        node.height = 1 + max(self.getHeight(node.left),
+                         self.getHeight(node.right))
+        node_r.height = 1 + max(self.getHeight(node_r.left),
+                         self.getHeight(node_r.right))
  
         # Return the new root
-        return y
+        return node_r
  
-    def rightRotate(self, z):
+    def rightRotate(self, node):
  
-        y = z.left
-        T3 = y.right
+        node_l = node.left
+        node_l_r = node_l.right
  
         # Perform rotation
-        y.right = z
-        z.left = T3
+        node_l.right = node
+        node.left = node_l_r
  
         # Update heights
-        z.height = 1 + max(self.getHeight(z.left),
-                        self.getHeight(z.right))
-        y.height = 1 + max(self.getHeight(y.left),
-                        self.getHeight(y.right))
+        node.height = 1 + max(self.getHeight(node.left),
+                        self.getHeight(node.right))
+        node_l.height = 1 + max(self.getHeight(node_l.left),
+                        self.getHeight(node_l.right))
  
         # Return the new root
-        return y
+        return node_l
  
     def getHeight(self, root):
         if not root:
@@ -97,5 +97,6 @@ class AVL(Node):
             return 0
  
         return self.getHeight(root.left) - self.getHeight(root.right)
+    
     def reset(self):
         self.root = None
