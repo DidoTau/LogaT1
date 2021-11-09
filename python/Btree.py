@@ -48,21 +48,8 @@ class Btree:
         self.raiz = NodoB(True)
         self.B = self.B
             
-
-
     def search(self,val):
         return self.raiz.search(val ,self.raiz)    
-
-    def print_tree(self, x, l=0):
-        print("Level ", l, " ", len(x.valores), end=":")
-        for i in x.valores:
-            print(i, end=" ")
-        print()
-        l += 1
-        if len(x.hijos) > 0:
-            for i in x.hijos:
-                self.print_tree(i, l)
-            
 
     def insert(self, val):
         B = self.B
@@ -112,9 +99,6 @@ class Btree:
            # nodoLleno.hijos = nodoLleno.hijos[0: int((B-1)/2)]
 
 
-            
-    
-
     def insertarNoLlena(self, raiz, val):
         B = self.B         
         largo = len(raiz.valores) - 1
@@ -132,13 +116,3 @@ class Btree:
                     i += 1
             self.insertarNoLlena(raiz.hijos[i], val)
 
-
-
-a = Btree(16)
-for i in range(10**3):
-    a.insert(i)
-
-a.print_tree(a.raiz)    
-
-for i in range(1001):
-    print(f"num {i}  {a.search(i)}")
