@@ -171,9 +171,8 @@ def sequence(node, sec, n, subsample, sequence_type ,k = 0, f = None):
     times = []   #valores tiempos c/ 1000 operaciones
     if sequence_type =="random":
         for i in range(sec): #100 
-            if i != 0:
-                node.reset()
-                node.insert(0)
+            node.reset()
+            node.insert(0)
             arr_values = np.zeros(n) # existencia  de valores
             arr_values[0] = 1 # 0 existe
             times_i = []
@@ -186,9 +185,9 @@ def sequence(node, sec, n, subsample, sequence_type ,k = 0, f = None):
             times.append(times_i)    
     elif sequence_type == "increasing":
         for i in range(sec): #100 
-            if i!= 0: 
-                node.reset()
-                node.insert(0) 
+
+            node.reset()
+            node.insert(0) 
              
             arr_values = np.zeros(n)
             arr_values[0] = 1 # 0 existe
@@ -204,7 +203,7 @@ def sequence(node, sec, n, subsample, sequence_type ,k = 0, f = None):
         for i in range(sec): #100 
 
             node.reset()
-            node.insert(1) 
+            node.insert(2) 
             arr_prob = np.zeros(n)   
             arr_values = np.zeros(n)
             arr_values[2] = 2 # 2 existe
